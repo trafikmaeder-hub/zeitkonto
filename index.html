@@ -10,13 +10,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Zeitkonto">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.API_URL = "https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec"; window.APP_VERSION = "ba3012f783";
+<script>window.API_URL = "https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec"; window.APP_VERSION = "c16b3b7cf0";
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
 <style>html,body{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f5f4;color:#5d6b66;display:flex;align-items:center;justify-content:center}</style>
 </head><body><div id="ld">Trafik Zeitkonto wird geladen …</div>
 <script>
 (function(){
-  var API = "https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec", KEY = "zk-ui-v1", HEAD = "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title>Trafik Zeitkonto<\/title>\n<meta name=\"theme-color\" content=\"#0f6b5c\">\n<link rel=\"manifest\" href=\"manifest.webmanifest\">\n<link rel=\"icon\" href=\"icon-192.png\">\n<link rel=\"apple-touch-icon\" href=\"apple-touch-icon.png\">\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n<meta name=\"mobile-web-app-capable\" content=\"yes\">\n<meta name=\"apple-mobile-web-app-title\" content=\"Zeitkonto\">\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n<script>window.API_URL = \"https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec\"; window.APP_VERSION = \"ba3012f783\";\nif (\"serviceWorker\" in navigator) addEventListener(\"load\", () => navigator.serviceWorker.register(\"sw.js\").catch(() => {}));<\/script>\n";
+  var API = "https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec", KEY = "zk-ui-v1", HEAD = "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title>Trafik Zeitkonto<\/title>\n<meta name=\"theme-color\" content=\"#0f6b5c\">\n<link rel=\"manifest\" href=\"manifest.webmanifest\">\n<link rel=\"icon\" href=\"icon-192.png\">\n<link rel=\"apple-touch-icon\" href=\"apple-touch-icon.png\">\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n<meta name=\"mobile-web-app-capable\" content=\"yes\">\n<meta name=\"apple-mobile-web-app-title\" content=\"Zeitkonto\">\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">\n<script>window.API_URL = \"https://script.google.com/macros/s/AKfycbyDztWrO9c3oODsAPcxAXNHVjKQlZQggpqfhTRq7WysXi0oNEeOJw3wodptfsYfRIiBNA/exec\"; window.APP_VERSION = \"c16b3b7cf0\";\nif (\"serviceWorker\" in navigator) addEventListener(\"load\", () => navigator.serviceWorker.register(\"sw.js\").catch(() => {}));<\/script>\n";
   function boot(html){
     html = html.replace('<base target="_top">', '').replace('<input type="checkbox" id="lgRem">', '<input type="checkbox" id="lgRem" checked>');
     html = html.replace(/<meta charset="utf-8">/i, '<meta charset="utf-8">' + HEAD);
@@ -25,6 +25,15 @@ if ("serviceWorker" in navigator) addEventListener("load", () => navigator.servi
   function fallback(){
     var c = null; try { c = localStorage.getItem(KEY); } catch (e) {}
     if (c) boot(c); else document.getElementById("ld").textContent = "Keine Verbindung zum Server. Bitte Internet prüfen und die App neu öffnen.";
+  }
+  /* schneller Start: gespeicherte Oberfläche sofort anzeigen, neue Version im Hintergrund für das nächste Öffnen holen */
+  var cached = null; try { cached = localStorage.getItem(KEY); } catch (e) {}
+  if (cached) {
+    fetch(API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ui" }) })
+      .then(function(r){ return r.json(); })
+      .then(function(r){ if (r && r.ok && r.data && r.data.html) { try { localStorage.setItem(KEY, r.data.html); } catch (e) {} } }, function(){});
+    boot(cached);
+    return;
   }
   var done = false, to = setTimeout(function(){ if (!done) { done = true; fallback(); } }, 9000);
   fetch(API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ui" }) })
